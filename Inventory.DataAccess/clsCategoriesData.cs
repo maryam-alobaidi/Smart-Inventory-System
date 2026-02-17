@@ -54,15 +54,15 @@ namespace Inventory.DataAccess
             }
         }
 
-        public static async Task<bool> FindByID(int CategoryID, string CategoryName)
+        public static async Task<CategoryModel?> FindByID(int CategoryID)
         {
-            bool isFound = false;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 using (SqlCommand command = new SqlCommand("Sp_GetCategoriesByID", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@CategoryID", CategoryID);
+
                     try
                     {
                         await connection.OpenAsync();
@@ -70,26 +70,25 @@ namespace Inventory.DataAccess
                         {
                             if (await reader.ReadAsync())
                             {
-                                isFound = true;
-                                CategoryName = (string)reader["CategoryName"];
-                            }
-                            else
-                            {
-                                isFound = false;
+                                // ننشئ الكائن فقط إذا وجدنا سجل في قاعدة البيانات
+                                return new CategoryModel
+                                {
+                                    CategoryID = Convert.ToInt32(reader["CategoryID"]),
+                                    CategoryName = reader["CategoryName"] as string ?? string.Empty
+                                };
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        isFound = false;
                         clsPrimaryFunctions.EntireInfoToEventLoge(ex.Message);
+                        return null;
                     }
                 }
             }
-            return isFound;
+            return null; // إذا لم يجد شيئاً
         }
-
-            public static async Task<bool?> UpdateCategories(int CategoryID, string CategoryName)
+        public static async Task<bool?> UpdateCategories(int CategoryID, string CategoryName)
             {
                 using (SqlCommand command = new SqlCommand("Sp_UpdateCategories"))
                 {

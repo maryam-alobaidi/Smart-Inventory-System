@@ -40,15 +40,10 @@ namespace Inventory.BusinessLogic
         }
 
         // ملاحظة: يفضل جعل الـ Find أيضاً Async إذا كانت قاعدة البيانات تدعم ذلك
-        public  static clsCategories Find(int CategoryID)
+        public async  static Task<CategoryModel?> Find(int CategoryID)
         {
-            string CategoryName = "";
-            bool IsFound = clsCategoriesData.FindByID(CategoryID, ref CategoryName);
+            return await clsCategoriesData.FindByID(CategoryID);
 
-            if (IsFound)
-                return new clsCategories(CategoryID, CategoryName);
-
-            return null;
         }
 
         //public static clsCategories FindByName(string CategoryName)
