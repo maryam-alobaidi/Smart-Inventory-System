@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace Inventory.DTOs.Model
 {
+    public enum enTransactionType
+    {
+        In = 1,
+        Out = 2
+    }
     public class TransactionModel
     {
         [Key]
@@ -18,15 +23,15 @@ namespace Inventory.DTOs.Model
         public int UserID { get; set; }
 
         [Required (ErrorMessage = "The Type of transaction is required")]
-        [StringLength(20)]
-        public string Type { get; set; }=string.Empty;
+
+        public enTransactionType Type { get; set; }//"in" for adding stock, "out" for removing stock
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be a positive integer")]
         public int Quantity { get; set; }
 
         [Required]
-        public DateTime TransactionDate { get; set; }
+        public DateTime TransactionDate { get; set; }=DateTime.Now; 
 
         public ProductModel? Product { get; set; }
 

@@ -88,7 +88,7 @@ namespace Inventory.DataAccess
             }
             return null; // إذا لم يجد شيئاً
         }
-        public static async Task<bool?> UpdateCategories(int CategoryID, string CategoryName)
+        public static async Task<bool> UpdateCategories(int CategoryID, string CategoryName)
             {
                 using (SqlCommand command = new SqlCommand("Sp_UpdateCategories"))
                 {

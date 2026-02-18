@@ -1,4 +1,4 @@
-﻿using Inventory.DTOs.Model.Inventory.DTOs.Model;
+﻿
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,17 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
+
 namespace Inventory.DTOs.Model
 {
-    بناءً على الحقول التي ذكرتها، إليك الـ UserModel بشكل احترافي.لقد أضفت بعض التحسينات الضرورية مثل التعامل مع القيم الفارغة(Nullability) وقيود صحة البيانات(Data Annotations) لضمان أمان كلمة المرور واسم المستخدم.
-
- كود UserModel.cs
- C#
-using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace Inventory.DTOs.Model
-    {
         public class UserModel
         {
             [Key]

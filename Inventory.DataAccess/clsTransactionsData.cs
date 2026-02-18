@@ -13,7 +13,7 @@ namespace Inventory.DataAccess
     {
         static string connectionString = clsDataAccessSettings.ConnectionString;
 
-        public static async Task<int?> AddNewTransactions(int ProductID, int UserID, string Type, int Quantity, DateTime TransactionDate)
+        public static async Task<int?> AddNewTransactions(int ProductID, int UserID, enTransactionType Type, int Quantity, DateTime TransactionDate)
         {
             using (SqlCommand command = new SqlCommand("Sp_AddNewTransactions"))
             {
@@ -35,12 +35,12 @@ namespace Inventory.DataAccess
             using (SqlCommand command = new SqlCommand("Sp_DeleteTransactions"))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@TransactionID", TransactionID);
+                command.Parameters.AddWithValue("@ID", TransactionID);
                 return await clsPrimaryFunctions.DeleteAsync(command, connectionString);
             }
         }
 
-        public static async Task<List<TransactionModel>> GetAllTransactions()
+        public static async Task<List<TransactionModel?>> GetAllTransactions()
         {
             using (SqlCommand command = new SqlCommand("Sp_GetAllTransactions"))
             {
@@ -55,7 +55,7 @@ namespace Inventory.DataAccess
                             TransactionID = reader.GetInt32(0),
                             ProductID = reader.GetInt32(1),
                             UserID = reader.GetInt32(2),
-                            Type = reader.GetString(3),
+                            Type =(enTransactionType) reader.GetInt32(3),
                             Quantity = reader.GetInt32(4),
                             TransactionDate = reader.GetDateTime(5)
                         });
@@ -63,6 +63,7 @@ namespace Inventory.DataAccess
                 }
                 return transactions;
             }
+            
         }
 
         public async static Task<TransactionModel?> FindByID(int TransactionID)
@@ -76,7 +77,7 @@ namespace Inventory.DataAccess
                     using (SqlCommand command = new SqlCommand("Sp_GetTransactionsByID", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@TransactionID", TransactionID);
+                        command.Parameters.AddWithValue("@ID", TransactionID);
 
                        
                         await connection.OpenAsync();
@@ -90,7 +91,7 @@ namespace Inventory.DataAccess
                                     TransactionID = TransactionID, 
                                     ProductID = (int)reader["ProductID"],
                                     UserID = (int)reader["UserID"],
-                                    Type = (string)reader["Type"],
+                                    Type = (enTransactionType)reader["Type"],
                                     Quantity = (int)reader["Quantity"],
                                     TransactionDate = (DateTime)reader["TransactionDate"]
                                 };
@@ -109,7 +110,7 @@ namespace Inventory.DataAccess
             return transaction;
         }
 
-        public static async Task<bool?> UpdateTransactions(int TransactionID, int ProductID, int UserID, string Type, int Quantity, DateTime TransactionDate)
+        public static async Task<bool> UpdateTransactions(int TransactionID, int ProductID, int UserID, enTransactionType Type, int Quantity, DateTime TransactionDate)
         {
             using (SqlCommand command = new SqlCommand("Sp_UpdateTransactions"))
             {
@@ -120,6 +121,8 @@ namespace Inventory.DataAccess
                 command.Parameters.AddWithValue("@Type", Type);
                 command.Parameters.AddWithValue("@Quantity", Quantity);
                 command.Parameters.AddWithValue("@TransactionDate", TransactionDate);
+                // داخل دالة _AddNewTransactions أو _UpdateTransactions
+               
 
                 return await clsPrimaryFunctions.UpdateAsync(command,connectionString);
             }

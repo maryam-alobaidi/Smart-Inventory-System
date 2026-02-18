@@ -1,6 +1,5 @@
 ﻿using Inventory.DataAccess;
 using Inventory.DTOs.Model;
-using Inventory.DTOs.Model.Inventory.DTOs.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;

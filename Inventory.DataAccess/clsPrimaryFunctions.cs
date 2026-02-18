@@ -43,13 +43,11 @@ namespace Inventory.DataAccess
                 }
                 catch (Exception ex)
                 {
-                    throw; // أعد رمي الاستثناء الأصلي
+                    throw; 
                 }
                 return ID;
             }
         }
-
-
 
         public static async Task<bool> DeleteAsync(SqlCommand command, string ConnectionString)
         {
@@ -137,9 +135,39 @@ namespace Inventory.DataAccess
             return reader;
         }
 
-      
 
-    public static void EntireInfoToEventLoge(string message)
+        //update product quantity after transaction
+
+        public static async Task<bool> UpdateProductQuantityAsync(SqlCommand command, string connectionString)
+        {
+            int rowAffected = 0;
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                command.Connection = connection;
+
+                try
+                {
+                    await connection.OpenAsync();
+                    rowAffected = await command.ExecuteNonQueryAsync();
+                }
+                catch (SqlException sqlEx) // التقاط أخطاء SQL المحددة
+                {
+
+                    throw;
+                }
+                catch (Exception ex) // التقاط أي استثناءات أخرى غير SqlException
+                {
+
+                    // رمي استثناء جديد أو إعادة رمي الأصلي كخطأ عام غير متوقع
+                    throw new Exception("An unexpected error occurred during the update product quentity database operation.", ex);
+                }
+                return rowAffected > 0;
+            }
+        }
+
+
+
+        public static void EntireInfoToEventLoge(string message)
     {
         string source = "SmartInventoryApp"; // اسم نظامك
         string log = "Application";

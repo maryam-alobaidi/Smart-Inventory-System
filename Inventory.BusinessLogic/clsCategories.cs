@@ -63,7 +63,7 @@ namespace Inventory.BusinessLogic
             return await clsCategoriesData.GetAllCategories();
         }
 
-        public async Task<bool?> Save()
+        public async Task<bool> Save()
         {
             switch (Mode)
             {
@@ -81,7 +81,7 @@ namespace Inventory.BusinessLogic
             return false;
         }
 
-        private async Task<bool?> _UpdateCategories()
+        private async Task<bool> _UpdateCategories()
         {
             // تصحيح: التعامل مع القيمة الراجعة بناءً على تصميم الـ Data Layer
             return await clsCategoriesData.UpdateCategories(this.CategoryID, this.CategoryName);

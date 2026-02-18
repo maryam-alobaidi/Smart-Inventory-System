@@ -1,5 +1,5 @@
 ﻿using Inventory.DTOs.Model;
-using Inventory.DTOs.Model.Inventory.DTOs.Model;
+
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;

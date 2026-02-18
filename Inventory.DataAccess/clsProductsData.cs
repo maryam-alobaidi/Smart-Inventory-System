@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Inventory.DataAccess
     public static class clsProductsData
     {
         static string connectionString = clsDataAccessSettings.ConnectionString;
-        public static async Task<int?> AddNewProducts(string ProductName, int Quantity, decimal Price, int MinStockLevel, int CategoryID)
+        public static async Task<int?> AddNewProducts(string ProductName, int Quantity, decimal Price, int MinStockLevel,int MaxCapacity, string ImagePath, int CategoryID)
         {
             using (SqlCommand command = new SqlCommand("Sp_AddNewProducts"))
             {
@@ -22,6 +23,9 @@ namespace Inventory.DataAccess
                 command.Parameters.AddWithValue("@Quantity", Quantity);
                 command.Parameters.Add("@Price", SqlDbType.Decimal).Value = Price;
                 command.Parameters.AddWithValue("@MinStockLevel", MinStockLevel);
+                command.Parameters.AddWithValue("@MaxCapacity", MaxCapacity);
+                command.Parameters.AddWithValue("@ImagePath", ImagePath);
+
                 command.Parameters.AddWithValue("@CategoryID", CategoryID);
                 command.Parameters.Add("@ID", SqlDbType.Int).Direction = ParameterDirection.Output;
                 string ID = "@ID";
@@ -57,7 +61,9 @@ namespace Inventory.DataAccess
                             Quantity = reader.GetInt32(2),
                             Price = reader.GetDecimal(3),
                             MinStockLevel = reader.GetInt32(4),
-                            CategoryID = reader.GetInt32(5)
+                            MaxCapacity = reader.GetInt32(5),
+                            ImagePath =reader.GetString(6),
+                            CategoryID = reader.GetInt32(7)
 
 
                         });
@@ -74,7 +80,7 @@ namespace Inventory.DataAccess
                 using (SqlCommand command = new SqlCommand("Sp_GetProductsByID", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@ProductID", productId);
+                    command.Parameters.AddWithValue("@ID", productId);
 
                     await connection.OpenAsync();
                     using (SqlDataReader reader = await command.ExecuteReaderAsync())
@@ -88,6 +94,8 @@ namespace Inventory.DataAccess
                                 Quantity = (int)reader["Quantity"],
                                 Price = (decimal)reader["Price"],
                                 MinStockLevel = (int)reader["MinStockLevel"],
+                                MaxCapacity = (int)reader["MaxCapacity"],
+                                ImagePath = (string)reader["ImagePath"],
                                 CategoryID = (int)reader["CategoryID"]
                             };
                         }
@@ -96,7 +104,7 @@ namespace Inventory.DataAccess
             }
             return null; 
         }
-        public static async Task<bool?> UpdateProducts(int ProductID, string ProductName, int Quantity, decimal Price, int MinStockLevel, int CategoryID)
+        public static async Task<bool?> UpdateProducts(int ProductID, string ProductName, int Quantity, decimal Price, int MinStockLevel,int MaxCapacity,string ImagePath, int CategoryID)
         {
             using (SqlCommand command = new SqlCommand("Sp_UpdateProducts"))
             {
@@ -112,6 +120,20 @@ namespace Inventory.DataAccess
             }
         }
 
+
+        public static async Task<bool> UpdateProductQuantity(int productID, int quentity)
+        {
+            using (SqlCommand command = new SqlCommand("Sp_UpdateProductQuantity"))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@ProductID", productID);
+               
+                command.Parameters.AddWithValue("@Quantity", quentity);
+               
+
+                return await clsPrimaryFunctions.UpdateProductQuantityAsync(command, connectionString);
+            }
+        }
     }
 
 }

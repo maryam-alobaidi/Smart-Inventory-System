@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Inventory.DTOs.Model
 {
@@ -12,24 +8,35 @@ namespace Inventory.DTOs.Model
     {
         [Key]
         public int ProductID { get; set; }
-        [Required(ErrorMessage ="The name of product is required")]
-        [StringLength(100)]
-        public string ProductName { get; set; }= string.Empty;
 
+        [Required(ErrorMessage = "The name of product is required")]
+        [StringLength(100)]
+        public string ProductName { get; set; } = string.Empty;
 
         [Required]
-        [Range(0,int.MaxValue,ErrorMessage ="Quantity must be a non-negative integer")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be a non-negative integer")]
         public int Quantity { get; set; }
 
-
         [Required]
-        [Range(0.01,double.MaxValue,ErrorMessage ="Price must be a positive decimal number")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be a positive decimal number")]
         public decimal Price { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Minimum stock level is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "MinStockLevel cannot be negative")]
         public int MinStockLevel { get; set; }
+
+        // --- الحقول الجديدة المضافة ---
+
+        [Range(1, int.MaxValue, ErrorMessage = "Max Capacity must be greater than 0")]
+        public int? MaxCapacity { get; set; } // جعلناه اختياري (Nullable)
+
+        public string? ImagePath { get; set; } // مسار الصورة
+
+        // ----------------------------
+
+        [Required]
         public int CategoryID { get; set; }
-        
+
         public CategoryModel? Category { get; set; }
     }
 }

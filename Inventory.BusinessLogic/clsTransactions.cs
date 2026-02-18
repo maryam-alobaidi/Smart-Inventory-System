@@ -1,11 +1,6 @@
 ﻿using Inventory.DataAccess;
 using Inventory.DTOs.Model;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Inventory.BusinessLogic
 {
@@ -19,7 +14,7 @@ namespace Inventory.BusinessLogic
         public int TransactionID { get; set; }
         public int ProductID { get; set; }
         public int UserID { get; set; }
-        public string Type { get; set; }
+        public enTransactionType Type { get; set; }//"in" for adding stock, "out" for removing stock
         public int Quantity { get; set; }
         public DateTime TransactionDate { get; set; }
         public clsTransactions()
@@ -27,18 +22,18 @@ namespace Inventory.BusinessLogic
             this.TransactionID = -1;
             this.ProductID = -1;
             this.UserID = -1;
-            this.Type = "";
+            this.Type = enTransactionType.In;
             this.Quantity = -1;
             this.TransactionDate = DateTime.MinValue;
             this.Mode = enMode.addNew;
         }
 
-        private clsTransactions(int TransactionID, int ProductID, int UserID, string Type, int Quantity, DateTime TransactionDate)
+        private clsTransactions(int TransactionID, int ProductID, int UserID, int Type, int Quantity, DateTime TransactionDate)
         {
             this.TransactionID = TransactionID;
             this.ProductID = ProductID;
             this.UserID = UserID;
-            this.Type = Type;
+            this.Type = (enTransactionType)Type;
             this.Quantity = Quantity;
             this.TransactionDate = TransactionDate;
 
@@ -47,9 +42,42 @@ namespace Inventory.BusinessLogic
 
         private async Task<bool> _AddNewTransactions()
         {
-            // Call DataAccess Layer
-            this.TransactionID = (int)await clsTransactionsData.AddNewTransactions(this.ProductID, this.UserID, this.Type, this.Quantity, this.TransactionDate);
-            return (this.TransactionID != -1);
+            var product = await clsProducts.Find(this.ProductID); // Find the product by ID to get the current quantity and other details of the
+            if (product == null)
+            {
+                return false; // Product not found, cannot update transaction
+            }
+
+
+            int newStockQuantity = (this.Type == enTransactionType.In ?
+            product.Quantity + this.Quantity :
+            product.Quantity - this.Quantity);
+
+            if (this.Type == enTransactionType.Out && product.Quantity > 0  )
+            {
+                if ((product.Quantity-product.MinStockLevel) < this.Quantity)
+                {
+                    throw new Exception($"Insufficient stock! Current: {product.Quantity}, Removing: {this.Quantity}");
+                }
+            }
+            
+
+            int totalExpectedQuantity = product.Quantity + this.Quantity;
+            if (this.Type == enTransactionType.In && product.MaxCapacity.HasValue)
+            {
+                if (totalExpectedQuantity > product.MaxCapacity.Value)
+                {
+                    throw new Exception($"Store Full! Current: {product.Quantity}, Adding: {this.Quantity}, Max allowed is: {product.MaxCapacity.Value}");
+                }
+            }
+            int transactionID = await clsTransactionsData.AddNewTransactions(this.ProductID, this.UserID, this.Type, this.Quantity, this.TransactionDate) ?? -1;
+
+            if (transactionID > 0)
+            {
+                this.TransactionID = transactionID;
+                return   await clsProductsData.UpdateProductQuantity(this.ProductID, newStockQuantity);
+            }
+                return false;
         }
 
         public static Task<bool> Delete(int TransactionID)
@@ -61,29 +89,13 @@ namespace Inventory.BusinessLogic
         public async static Task<TransactionModel?> Find(int TransactionID)
         {
 
-
             TransactionModel? transactionModel =await clsTransactionsData.FindByID(TransactionID);
            
             return transactionModel;
         }
 
-        //public static clsTransactions FindByName(int ProductID)
-        //{
-        //    // Call DataAccess Layer
-        //    int TransactionID = -1;
-        //    int UserID = -1;
-        //    string Type = "";
-        //    int Quantity = -1;
-        //    DateTime TransactionDate = DateTime.MinValue;
 
-        //    bool IsFound = clsTransactionsData.FindByName(ref TransactionID, ProductID, ref UserID, ref Type, ref Quantity, ref TransactionDate);
-        //    if (IsFound)
-        //        return new clsTransactions(TransactionID, ProductID, UserID, Type, Quantity, TransactionDate);
-        //    else
-        //        return null;
-        //}
-
-        public static async Task<List<TransactionModel>> GetAllTransactions()
+        public static async Task<List<TransactionModel?>> GetAllTransactions()
         {
             return await clsTransactionsData.GetAllTransactions();
         }
@@ -100,12 +112,62 @@ namespace Inventory.BusinessLogic
             }
             return false;
         }
-
+        ///update the transaction and update the quantity of the product accordingly at here i will find the product by id and update the quantity of the product according to the type of transaction
         private async Task<bool> _UpdateTransactions()
         {
-            // Call DataAccess Layer
-            return await clsTransactionsData.UpdateTransactions(this.TransactionID, this.ProductID, this.UserID, this.Type, this.Quantity, this.TransactionDate) ?? false;
+
+            var oldTansaction = await clsTransactions.Find(this.TransactionID);
+
+            if (oldTansaction == null)
+            {
+                return false; // Transaction not found, cannot update
+            }
+
+            var product = await clsProducts.Find(this.ProductID); // Find the product by ID to get the current quantity and other details of the
+            if (product == null)
+            {
+                return false;
+            }
+
+            int currentQuantity = product.Quantity;
+
+            if (this.Type == enTransactionType.In)
+            {
+                currentQuantity -= oldTansaction.Quantity; // Remove the old quantity from the current quantity
+                currentQuantity += this.Quantity; // Add the new quantity to the current quantity
+            }
+            else
+            {
+                currentQuantity += oldTansaction.Quantity; // Add the old quantity back to the current quantity
+                currentQuantity -= this.Quantity; // Remove the new quantity from the current quantity
+            }
+
+
+            if (currentQuantity < 0)
+                throw new Exception("Insufficient stock!");
+
+
+            if(this.Type == enTransactionType.In && product.MaxCapacity.HasValue && currentQuantity > product.MaxCapacity.Value)
+                throw new Exception($"Cannot add items. Total quantity ({currentQuantity}) will exceed maximum capacity ({product.MaxCapacity}).");
+
+
+            // In _UpdateTransactions(), change the call to clsTransactionsData.UpdateTransactions to pass Type.ToString() instead of Type
+            bool isUpdate = await clsTransactionsData.UpdateTransactions(
+                this.TransactionID,
+                this.ProductID,
+                this.UserID,
+                this.Type,
+                this.Quantity,
+                this.TransactionDate);
+
+            if (isUpdate)
+            {
+
+                await clsProductsData.UpdateProductQuantity(this.ProductID, currentQuantity);
+            }
+            return false;
         }
+
 
     }
 
