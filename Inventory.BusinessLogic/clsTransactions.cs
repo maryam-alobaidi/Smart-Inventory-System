@@ -57,7 +57,7 @@ namespace Inventory.BusinessLogic
             {
                 if ((product.Quantity-product.MinStockLevel) < this.Quantity)
                 {
-                    throw new Exception($"Insufficient stock! Current: {product.Quantity}, Removing: {this.Quantity}");
+                    throw new Exception($"Insufficient stock! Current: {product.Quantity}, Removing: {this.Quantity} The Min Stock Level:{product.MinStockLevel} ");
                 }
             }
             
@@ -71,13 +71,17 @@ namespace Inventory.BusinessLogic
                 }
             }
             int transactionID = await clsTransactionsData.AddNewTransactions(this.ProductID, this.UserID, this.Type, this.Quantity, this.TransactionDate) ?? -1;
-
             if (transactionID > 0)
             {
                 this.TransactionID = transactionID;
-                return   await clsProductsData.UpdateProductQuantity(this.ProductID, newStockQuantity);
+                bool isProductUpdated = await clsProductsData.UpdateProductQuantity(this.ProductID, newStockQuantity);
+
+                if (!isProductUpdated)
+                    throw new Exception("Transaction saved, but failed to update product stock!");
+
+                return true;
             }
-                return false;
+            return false;
         }
 
         public static Task<bool> Delete(int TransactionID)
@@ -162,8 +166,7 @@ namespace Inventory.BusinessLogic
 
             if (isUpdate)
             {
-
-                await clsProductsData.UpdateProductQuantity(this.ProductID, currentQuantity);
+              return  await clsProductsData.UpdateProductQuantity(this.ProductID, currentQuantity);
             }
             return false;
         }

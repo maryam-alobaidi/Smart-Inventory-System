@@ -39,7 +39,7 @@ namespace Inventory.DataAccess
             using (SqlCommand command = new SqlCommand("Sp_DeleteProducts"))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@ProductID", ProductID);
+                command.Parameters.AddWithValue("@ID", ProductID);
                 return await clsPrimaryFunctions.DeleteAsync(command, connectionString);
             }
         }
@@ -114,6 +114,8 @@ namespace Inventory.DataAccess
                 command.Parameters.AddWithValue("@Quantity", Quantity);
                 command.Parameters.AddWithValue("@Price", Price);
                 command.Parameters.AddWithValue("@MinStockLevel", MinStockLevel);
+                command.Parameters.AddWithValue("@MaxCapacity", MaxCapacity);
+                command.Parameters.AddWithValue("@ImagePath", ImagePath);
                 command.Parameters.AddWithValue("@CategoryID", CategoryID);
 
                 return await clsPrimaryFunctions.UpdateAsync(command,connectionString);

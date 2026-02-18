@@ -35,6 +35,7 @@ namespace Inventory.API.Controllers
             newProduct.ProductName = product.ProductName;
             newProduct.Quantity = product.Quantity;
             newProduct.Price = product.Price;
+            newProduct.MaxCapacity = product.MaxCapacity;
             newProduct.MinStockLevel = product.MinStockLevel;
             newProduct.CategoryID = product.CategoryID;
 
@@ -64,6 +65,8 @@ namespace Inventory.API.Controllers
             clsProducts.Quantity = product.Quantity;
             clsProducts.Price = product.Price;
             clsProducts.MinStockLevel = product.MinStockLevel;
+            clsProducts.MaxCapacity = product.MaxCapacity;
+            clsProducts.ImagePath = product.ImagePath;
             clsProducts.CategoryID = product.CategoryID;
             clsProducts.Mode=clsProducts.enMode.update;
 

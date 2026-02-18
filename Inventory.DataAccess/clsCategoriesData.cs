@@ -28,7 +28,7 @@ namespace Inventory.DataAccess
                 using (SqlCommand command = new SqlCommand("Sp_DeleteCategories"))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@CategoryID", CategoryID);
+                    command.Parameters.AddWithValue("@ID", CategoryID);
                     return await clsPrimaryFunctions.DeleteAsync(command, connectionString);
                 }
             }
@@ -61,7 +61,7 @@ namespace Inventory.DataAccess
                 using (SqlCommand command = new SqlCommand("Sp_GetCategoriesByID", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@CategoryID", CategoryID);
+                    command.Parameters.AddWithValue("@ID", CategoryID);
 
                     try
                     {

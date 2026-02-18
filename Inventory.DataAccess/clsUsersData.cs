@@ -34,7 +34,7 @@ namespace Inventory.DataAccess
             using (SqlCommand command = new SqlCommand("Sp_DeleteUsers"))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@UserID", UserID);
+                command.Parameters.AddWithValue("@ID", UserID);
                 return await clsPrimaryFunctions.DeleteAsync(command,connectionString);
             }
         }
@@ -62,7 +62,7 @@ namespace Inventory.DataAccess
 
                 SqlDataReader reader = await clsPrimaryFunctions.GetAsync(command, connectionString);
 
-                if (await reader.ReadAsync())
+                while (await reader.ReadAsync())
                 {
                     users.Add(new UserModel
                     {
@@ -71,10 +71,11 @@ namespace Inventory.DataAccess
                         Password = reader.GetString(reader.GetOrdinal("Password")),
                         Role = reader.GetString(reader.GetOrdinal("Role"))
                     });
-                    return users;
+                  
                 }
+                return users;
             }
-            return null;
+         
         }
 
         public async static Task<UserModel?> FindByID(int UserID)
@@ -85,7 +86,7 @@ namespace Inventory.DataAccess
                 using (SqlCommand command = new SqlCommand("Sp_GetUsersByID", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@UserID", UserID);
+                    command.Parameters.AddWithValue("@ID", UserID);
                     try
                     {
                         connection.Open();
