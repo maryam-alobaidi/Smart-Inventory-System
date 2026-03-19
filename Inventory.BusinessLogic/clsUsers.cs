@@ -60,20 +60,10 @@ namespace Inventory.BusinessLogic
            
         }
 
-        //public async static clsUsers FindByName(string Username)
-        //{
-        //    // Call DataAccess Layer
-        //    int UserID = -1;
-        //    string Password = "";
-        //    string Role = "";
-
-        //    bool IsFound = clsUsersData.FindByName(ref UserID, Username, ref Password, ref Role);
-        //    if (IsFound)
-        //        return new clsUsers(UserID, Username, Password, Role);
-        //    else
-        //        return null;
-        //}
-
+       public async static Task<UserModel?> FindByUsernameAndPassword(string username,string password)
+        {
+                       return await clsUsersData.FindByUsernameAndPassword(username, password);
+        }
         public async static  Task<List<UserModel?>> GetAllUsers()
         {
             return await clsUsersData.GetAllUsers();

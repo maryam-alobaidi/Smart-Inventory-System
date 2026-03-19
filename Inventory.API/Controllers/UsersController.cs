@@ -33,9 +33,9 @@ namespace Inventory.API.Controllers
         public async Task<ActionResult<UserModel>> Add(UserModel user)
         {
             clsUsers newUser = new clsUsers();
-                newUser.Username = user.Username;
-                newUser.Password = user.Password;
-                newUser.Role = user.Role;
+            newUser.Username = user.Username;
+            newUser.Password = user.Password;
+            newUser.Role = user.Role;
 
 
             if (!await newUser.Save())
@@ -44,7 +44,7 @@ namespace Inventory.API.Controllers
             }
             else
             {
-                user.UserID =newUser.UserID;
+                user.UserID = newUser.UserID;
                 return CreatedAtAction(nameof(GetById), new { id = user.UserID }, user);
             }
         }
@@ -63,7 +63,7 @@ namespace Inventory.API.Controllers
             clsUser.Username = user.Username;
             clsUser.Password = user.Password;
             clsUser.Role = user.Role;
-            clsUser.Mode = clsUsers.enMode.update; 
+            clsUser.Mode = clsUsers.enMode.update;
 
             if (!await clsUser.Save())
             {
@@ -88,5 +88,35 @@ namespace Inventory.API.Controllers
                 return BadRequest($"Failed to delete user with id {id}.");
             }
         }
+
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] LoginRequestDTO loginData)
+        {
+            try
+            {
+                var user = await clsUsers.FindByUsernameAndPassword(loginData.Username, loginData.Password);
+                if (user == null)
+                {
+                    return Unauthorized("Invalid username or password.");
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        Token = "Secret_Token_123",
+                        Role = user.Role
+
+                    });
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+        }
     }
 }
+

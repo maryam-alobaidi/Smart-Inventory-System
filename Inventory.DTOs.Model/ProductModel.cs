@@ -37,6 +37,6 @@ namespace Inventory.DTOs.Model
         [Required]
         public int CategoryID { get; set; }
 
-        public CategoryModel? Category { get; set; }
+        public string? CategoryName { get; set; }
     }
 }

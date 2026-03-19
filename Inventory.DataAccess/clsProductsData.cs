@@ -63,7 +63,9 @@ namespace Inventory.DataAccess
                             MinStockLevel = reader.GetInt32(4),
                             MaxCapacity = reader.GetInt32(5),
                             ImagePath =reader.GetString(6),
-                            CategoryID = reader.GetInt32(7)
+                            CategoryID = reader.GetInt32(7),
+                            CategoryName = reader.GetString(8)
+
 
 
                         });

@@ -1,18 +1,21 @@
+﻿var builder = WebApplication.CreateBuilder(args);
 
-
-
-var builder = WebApplication.CreateBuilder(args);
-
-
-// Add services to the container.
-
+// 1. إضافة الخدمات (Add services)
 builder.Services.AddControllers();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Configure the connection string for the data access layer
+// --- إضافة هذا الجزء لتعريف سياسة الـ CORS ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+// --------------------------------------------
+
+// إعداد نص الاتصال
 string? connectingString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectingString))
 {
@@ -22,17 +25,21 @@ Inventory.DataAccess.clsDataAccessSettings.ConnectionString = connectingString;
 
 var app = builder.Build();
 
-
-// Configure the HTTP request pipeline.
+// 2. إعداد خط الأنابيب (Configure the HTTP request pipeline)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// ترتيب الأسطر هنا مهم جداً
 app.UseHttpsRedirection();
 
+app.UseCors("AllowAll"); // الآن سيعمل لأننا عرفناه فوق
+
 app.UseAuthorization();
+
+app.UseStaticFiles();
 
 app.MapControllers();
 

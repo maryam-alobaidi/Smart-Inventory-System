@@ -90,9 +90,9 @@ namespace Inventory.DataAccess
                     try
                     {
                         connection.Open();
-                        using (SqlDataReader reader = command.ExecuteReader())
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new UserModel
                                 {
@@ -106,6 +106,48 @@ namespace Inventory.DataAccess
                             else
                             {
                                 return null; // No user found with the given ID
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                        clsPrimaryFunctions.EntireInfoToEventLoge(ex.Message);
+                    }
+                }
+            }
+            return null;
+        }
+
+        public async static Task<UserModel?> FindByUsernameAndPassword(string username, string password)
+        {
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("Sp_GetUserByUsernameAndPassword", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Username", username);
+                    command.Parameters.AddWithValue("@Password", password);
+                    try
+                    {
+                        connection.Open();
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return new UserModel
+                                {
+                                    UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
+                                    Username = reader.GetString(reader.GetOrdinal("Username")),
+                                    Password = reader.GetString(reader.GetOrdinal("Password")),
+                                    Role = reader.GetString(reader.GetOrdinal("Role"))
+                                };
+
+                            }
+                            else
+                            {
+                                return null; // No user found with the given Username and Password
                             }
                         }
                     }
